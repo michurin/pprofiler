@@ -86,11 +86,11 @@ class Profiler(object):
         self.stack = []
 
     def __call__(self, name):
-        if name not in self.scope.scopes:
-            self.scope.scopes[name] = Scope(stat=Stat(), scopes={})
         return Timer(self, name)
 
     def _enter(self, name):
+        if name not in self.scope.scopes:
+            self.scope.scopes[name] = Scope(stat=Stat(), scopes={})
         self.stack.append(self.scope)
         self.scope = self.scope.scopes[name]
 

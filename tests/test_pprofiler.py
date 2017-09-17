@@ -103,7 +103,7 @@ def test_report_not_complete():
 def test_no_data_in_scope():
     local_profiler = type(profiler)()
     a = local_profiler('a')
-    assert local_profiler.report == [{'avg': None, 'dev': None, 'max': None, 'min': None, 'name': 'a', 'num': 0, 'percent': 0., 'sum': 0.}]
+    assert local_profiler.report == []
 
 
 def test_empty():
