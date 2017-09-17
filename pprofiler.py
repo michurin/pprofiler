@@ -100,7 +100,8 @@ class Profiler(object):
 
     @property
     def report(self):
-        assert self.scope.stat is None  # TODO: тесты: проверить это
+        if self.scope.stat is not None:
+            raise RuntimeError('pprofiler: report can not be prepared, not all measurements completed')
         return scopes_to_report(self.scope.scopes)
 
     def __iter__(self):
