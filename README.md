@@ -5,7 +5,7 @@ pprofiler
 is a Python level profiler like `timeit` (against C code level profilers like `cProfile`).
 
 Key features
-============
+------------
 
 * Can be used like
   * context manager
@@ -20,11 +20,11 @@ Key features
 * Easy usage/integration
 
 Quick overview
-==============
+--------------
 
 [coming soon]
 
 Multithreading/multiprocessing
-==============================
+------------------------------
 
 [coming soon]
