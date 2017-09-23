@@ -5,33 +5,9 @@ import time
 import pytest
 
 from pprofiler import profiler
-import pprofiler
 
 
-# TODO:
-# - report
-#   - subscopes
-#   - order of subscopes
-# - formatter
-#   - too short names
-
-
-class FakeTimer(object):
-
-    def __init__(self, start_time):
-        self.wallclock = float(start_time)
-
-    def time(self):
-        return self.wallclock
-
-    def sleep(self, seconds):
-        self.wallclock += seconds
-
-
-def test_contextmanager(monkeypatch):
-    faketimer = FakeTimer(1000)
-    monkeypatch.setattr(pprofiler.time, 'time', faketimer.time)
-    monkeypatch.setattr(time, 'sleep', faketimer.sleep)
+def test_contextmanager(fake_timer):
     local_profiler = type(profiler)()
     for t in range(10):
         with local_profiler('x'):
@@ -49,10 +25,7 @@ def test_contextmanager(monkeypatch):
         })]
 
 
-def test_decorator(monkeypatch):
-    faketimer = FakeTimer(1000)
-    monkeypatch.setattr(pprofiler.time, 'time', faketimer.time)
-    monkeypatch.setattr(time, 'sleep', faketimer.sleep)
+def test_decorator(fake_timer):
     local_profiler = type(profiler)()
     @local_profiler('x')
     def f(t):
@@ -72,10 +45,7 @@ def test_decorator(monkeypatch):
         })]
 
 
-def test_create_and_use_order(monkeypatch):
-    faketimer = FakeTimer(1000)
-    monkeypatch.setattr(pprofiler.time, 'time', faketimer.time)
-    monkeypatch.setattr(time, 'sleep', faketimer.sleep)
+def test_create_and_use_order(fake_timer):
     local_profiler = type(profiler)()
     c = local_profiler('c')
     b = local_profiler('b')
@@ -93,10 +63,7 @@ def test_create_and_use_order(monkeypatch):
     ])
 
 
-def test_create_and_use_scope(monkeypatch):
-    faketimer = FakeTimer(1000)
-    monkeypatch.setattr(pprofiler.time, 'time', faketimer.time)
-    monkeypatch.setattr(time, 'sleep', faketimer.sleep)
+def test_create_and_use_scope(fake_timer):
     local_profiler = type(profiler)()
     a = local_profiler('a')
     b = local_profiler('b')
