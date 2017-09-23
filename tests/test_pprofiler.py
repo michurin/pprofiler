@@ -86,11 +86,27 @@ def test_create_and_use_order(monkeypatch):
         time.sleep(3)
     with c:
         time.sleep(2)
-    assert local_profiler.report == [
-        pytest.approx({'avg': 5., 'dev': None, 'max': 5., 'min': 5., 'name': 'a', 'num': 1, 'percent': 50., 'sum': 5., }),
-        pytest.approx({'avg': 3., 'dev': None, 'max': 3., 'min': 3., 'name': 'b', 'num': 1, 'percent': 30., 'sum': 3., }),
-        pytest.approx({'avg': 2., 'dev': None, 'max': 2., 'min': 2., 'name': 'c', 'num': 1, 'percent': 20., 'sum': 2., }),
-    ]
+    assert local_profiler.report == pytest.approx([
+        {'avg': 5., 'dev': None, 'max': 5., 'min': 5., 'name': 'a', 'num': 1, 'percent': 50., 'sum': 5.},
+        {'avg': 3., 'dev': None, 'max': 3., 'min': 3., 'name': 'b', 'num': 1, 'percent': 30., 'sum': 3.},
+        {'avg': 2., 'dev': None, 'max': 2., 'min': 2., 'name': 'c', 'num': 1, 'percent': 20., 'sum': 2.},
+    ])
+
+
+def test_create_and_use_scope(monkeypatch):
+    faketimer = FakeTimer(1000)
+    monkeypatch.setattr(pprofiler.time, 'time', faketimer.time)
+    monkeypatch.setattr(time, 'sleep', faketimer.sleep)
+    local_profiler = type(profiler)()
+    a = local_profiler('a')
+    b = local_profiler('b')
+    with a:
+        with b:
+            time.sleep(1)
+    assert local_profiler.report == pytest.approx([{
+        'avg': 1., 'dev': None, 'max': 1., 'min': 1., 'name': 'a', 'num': 1, 'percent': 100., 'sum': 1., '~': [{
+        'avg': 1., 'dev': None, 'max': 1., 'min': 1., 'name': 'b', 'num': 1, 'percent': 100., 'sum': 1.}],
+    }])
 
 
 def test_report_not_complete():

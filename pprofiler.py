@@ -10,7 +10,10 @@ import math
 
 
 __all__ = ['profiler']  # the only publick symbol
-__version__ = '0.0'
+__version__ = '1.0'
+
+
+SUBSCOPE_NAME = '~'
 
 
 Scope = collections.namedtuple('Scope', ('stat', 'scopes'))
@@ -134,7 +137,7 @@ def report_to_flat(nodes):
     while stack or nodes:
         n = nodes.pop(0)
         n['level'] = len(stack)
-        subscope = n.pop('x', None)
+        subscope = n.pop(SUBSCOPE_NAME, None)
         yield n
         if subscope:
             stack.append(nodes)
@@ -150,7 +153,7 @@ def scopes_to_report(scopes):
         s = v.stat.stat
         s['name'] = k
         if v.scopes:
-            s['x'] = scopes_to_report(v.scopes)
+            s[SUBSCOPE_NAME] = scopes_to_report(v.scopes)
         r.append(s)
         a += s['sum']
     if a > 0:
