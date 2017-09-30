@@ -68,10 +68,10 @@ class Timer(object):
 
     def __call__(self, f):
         @functools.wraps(f)
-        def g(*a, **kv):
+        def pprofiler_wrapper(*a, **kv):
             with self:
                 return f(*a, **kv)
-        return g
+        return pprofiler_wrapper
 
     def __enter__(self):
         self.start = time.time()
