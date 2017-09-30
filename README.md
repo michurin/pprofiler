@@ -223,7 +223,73 @@ You can find more complex exmaples in 'examples/' directory.
 
 ### Nested scopes
 
-[coming soon]
+Nested scopes helps you to study your timings deeper. Look at this:
+
+```python
+#!/usr/bin/python
+# coding: U8
+
+
+import time
+import random
+
+from pprofiler import profiler
+
+
+def rand_sleep(dt):
+    time.sleep(dt * (1 + 0.4 * (random.random() - 0.5)))  # dt ± 20%
+
+
+def main():
+    with profiler('cook document'):
+        rand_sleep(.1)  # we do not want to give the individual attention to this
+        with profiler('create title'):
+            rand_sleep(.2)
+        with profiler('create body'):
+            rand_sleep(.3)
+    with profiler('push document'):
+        rand_sleep(.5)
+    profiler.print_report()
+
+
+if __name__ == '__main__':
+    main()
+```
+
+Here we have two high level tasks: (i) 'cook document' and (ii) 'push document'. But we want to pay attention
+to some subtasks in 'cook document': 'create title' and 'create body'.
+
+We can get report like this:
+
+```
+name              perc   sum  n   avg   max   min dev
+----------------- ---- ----- -- ----- ----- ----- ---
+cook document ...  52%  0.63  1  0.63  0.63  0.63   -
+. create body ...  65%  0.34  1  0.34  0.34  0.34   -
+. create title ..  35%  0.18  1  0.18  0.18  0.18   -
+push document ...  48%  0.59  1  0.59  0.59  0.59   -
+```
+
+You can read it level by level. This is high level tasks:
+
+```
+...
+cook document ...  52%  0.63  1  0.63  0.63  0.63   -
+...
+push document ...  48%  0.59  1  0.59  0.59  0.59   -
+```
+
+You can see, that cooking takes 52% of time, and pushing takes 48%. But you can look deeper
+inside of cooking:
+
+```
+...
+. create body ...  65%  0.34  1  0.34  0.34  0.34   -
+. create title ..  35%  0.18  1  0.18  0.18  0.18   -
+...
+```
+
+Here you can analyze parts of 'cook document' task.
 
 Multithreading/multiprocessing
 ------------------------------
