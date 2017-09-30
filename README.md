@@ -194,7 +194,7 @@ You can use you custom logger like this `profiler.print_report(logger.info)`:
 
 You can get report as nested structure (`profiler.report`) to store it into some document-orienteted storage like MongoDB:
 
-```
+```python
 [{'avg': 0.1868218183517456,
   'dev': 0.03486269297645324,
   'max': 0.2114734649658203,
@@ -207,7 +207,7 @@ You can get report as nested structure (`profiler.report`) to store it into some
 
 And you can get the report as flat list of items to store report line by line to some relational databases, using `profiler` as iterator:
 
-```
+```python
 [{'avg': 0.18060684204101562,
   'dev': 0.0004245030582017247,
   'level': 0,
