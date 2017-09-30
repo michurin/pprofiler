@@ -66,11 +66,11 @@ if __name__ == '__main__':
 Output:
 
 ```
-name            perc    sum   n    avg    min    mix    dev
---------------- ---- ------ --- ------ ------ ------ ------
-process chunk..  77%   0.59   3   0.20   0.16   0.24   0.04
-push result....  12%   0.09   1   0.09   0.09   0.09    nan
-prepare input..  11%   0.09   1   0.09   0.09   0.09    nan
+name             perc   sum  n   avg   max   min   dev
+---------------- ---- ----- -- ----- ----- ----- -----
+process chunk ..  73%  0.58  3  0.19  0.22  0.18  0.02
+push result ....  14%  0.11  1  0.11  0.11  0.11     -
+prepare input ..  13%  0.10  1  0.10  0.10  0.10     -
 ```
 
 ### Using as decorator:
@@ -120,11 +120,11 @@ if __name__ == '__main__':
 Output:
 
 ```
-name            perc    sum   n    avg    min    mix    dev
---------------- ---- ------ --- ------ ------ ------ ------
-process chunk..  76%   0.67   3   0.22   0.22   0.23   0.01
-prepare input..  12%   0.11   1   0.11   0.11   0.11    nan
-push result....  12%   0.11   1   0.11   0.11   0.11    nan
+name             perc   sum  n   avg   max   min   dev
+---------------- ---- ----- -- ----- ----- ----- -----
+process chunk ..  74%  0.64  3  0.21  0.23  0.19  0.03
+prepare input ..  14%  0.12  1  0.12  0.12  0.12     -
+push result ....  13%  0.11  1  0.11  0.11  0.11     -
 ```
 
 ### Nested scopes

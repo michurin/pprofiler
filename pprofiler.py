@@ -10,7 +10,7 @@ import math
 
 
 __all__ = ['profiler']  # the only publick symbol
-__version__ = '1.0'
+__version__ = '1.1'
 
 
 SUBSCOPE_NAME = '~'
@@ -82,6 +82,28 @@ class Timer(object):
         return False
 
 
+class TableField(object):
+
+    def __init__(self, name, align_left=None, fill=None, extra_padding=None):
+        self.name = name
+        self.width = len(name)
+        self.align = '<' if align_left else '>'
+        self.fill = '.' if fill else ''
+        self.extra_padding = 1 if extra_padding is None else extra_padding
+
+    def update_width(self, width):
+        self.width = max(self.width, width + self.extra_padding)
+
+    def format_header(self):
+        return '{:{}{}s}'.format(self.name, self.align, self.width)
+
+    def format_separator(self):
+        return '-' * self.width
+
+    def format_value(self, value):
+        return '{:{}{}{}s}'.format(value, self.fill, self.align, self.width)
+
+
 class Profiler(object):
 
     def __init__(self):
@@ -112,18 +134,31 @@ class Profiler(object):
 
     @property
     def lines(self):
-        max_fname_len = 5
+        report_fields = [
+            TableField('name', align_left=True, fill=True, extra_padding=2),
+            TableField('perc'),
+            TableField('sum'),
+            TableField('n'),
+            TableField('avg'),
+            TableField('max'),
+            TableField('min'),
+            TableField('dev'),
+        ]
         lines = []
         for s in self:
-            fname = '. ' * s['level'] + s['name']
-            max_fname_len = max(max_fname_len, len(fname))
-            d = {k: (float('nan') if s[k] is None else s[k]) for k in ('percent', 'sum', 'num', 'avg', 'min', 'max', 'dev')}
-            d['fname'] = fname
+            d = {k: '-' if s[k] is None else '{:.2f}'.format(s[k]) for k in ('sum', 'avg', 'min', 'max', 'dev')}
+            d['name'] = '. ' * s['level'] + s['name'] + ' '
+            d['perc'] = '{:.0f}%'.format(s['percent'])
+            d['n'] = '{:d}'.format(s['num'])
             lines.append(d)
-        yield 'name{:{}} perc    sum   n    avg    min    mix    dev'.format(' ', max_fname_len - 2)
-        yield '--{:-<{}} ---- ------ --- ------ ------ ------ ------'.format('-', max_fname_len)
-        for s in lines:
-            yield '{fname:.<{0}} {percent:3.0f}% {sum:6.2f} {num:3d} {avg:6.2f} {min:6.2f} {max:6.2f} {dev:6.2f}'.format(max_fname_len + 2, **s)
+        fields = {f.name: f for f in report_fields}
+        for l in lines:
+            for n, f in l.items():
+                fields[n].update_width(len(f))
+        yield ' '.join(f.format_header() for f in report_fields)
+        yield ' '.join(f.format_separator() for f in report_fields)
+        for l in lines:
+            yield ' '.join(f.format_value(l[f.name]) for f in report_fields)
 
     def print_report(self, printer=None):
         if printer is None:
