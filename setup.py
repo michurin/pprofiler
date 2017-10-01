@@ -1,11 +1,6 @@
 # coding: U8
 
 
-''' TODO:
-Description: UNKNOWN
-'''
-
-
 import re
 
 from distutils.core import setup
