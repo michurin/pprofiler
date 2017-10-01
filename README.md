@@ -294,4 +294,161 @@ Here you can analyze parts of 'cook document' task.
 Multithreading/multiprocessing
 ------------------------------
 
-[coming soon]
+`pprofiler` is not designed for concurrent computing. But it is possible to
+use it in multithreading/multiprocessing applications. The simplest way is
+to build autonomous instance of `pprofiler` in each worker:
+
+```python
+#!/usr/bin/python
+# coding: U8
+
+
+import time
+import random
+import multiprocessing
+import sys
+import logging
+
+from pprofiler import profiler
+
+
+logger = logging.getLogger()
+
+
+def rand_sleep(dt):
+    time.sleep(dt * (1 + 0.4 * (random.random() - 0.5)))  # dt ± 20%
+
+
+def subprocess_worker(x):
+    local_profiler = type(profiler)()  # create and use local profiler in each child process
+    logger.debug('Worker %d start', x)
+    with local_profiler('worker_%d' % x):
+        rand_sleep(3)
+    logger.debug('Worker %d done', x)
+    local_profiler.print_report(logger.info)
+
+
+def main():
+    logging.basicConfig(
+        format='%(asctime)s,%(msecs)03d [%(process)d] [%(levelname)s] %(message)s',
+        datefmt='%H:%M:%S',
+        level=logging.DEBUG,
+        handlers=[logging.StreamHandler(sys.stdout)])
+    logger.debug('Master start')
+    with profiler('master (total)'):
+        pool = multiprocessing.Pool(processes=2)
+        for i in pool.imap_unordered(subprocess_worker, range(2)):
+            pass
+    logger.debug('Master done')
+    profiler.print_report(logger.info)
+
+
+if __name__ == '__main__':
+    main()
+```
+
+You can get something like this:
+
+```
+22:53:11,092 [1216] [DEBUG] Master start
+22:53:11,236 [1217] [DEBUG] Worker 0 start
+22:53:11,237 [1218] [DEBUG] Worker 1 start
+22:53:14,189 [1218] [DEBUG] Worker 1 done
+22:53:14,190 [1218] [INFO] name         perc   sum  n   avg   max   min dev
+22:53:14,190 [1218] [INFO] ----------- ----- ----- -- ----- ----- ----- ---
+22:53:14,191 [1218] [INFO] worker_1 ..  100%  2.95  1  2.95  2.95  2.95   -
+22:53:14,402 [1217] [DEBUG] Worker 0 done
+22:53:14,403 [1217] [INFO] name         perc   sum  n   avg   max   min dev
+22:53:14,403 [1217] [INFO] ----------- ----- ----- -- ----- ----- ----- ---
+22:53:14,404 [1217] [INFO] worker_0 ..  100%  3.16  1  3.16  3.16  3.16   -
+22:53:14,405 [1216] [DEBUG] Master done
+22:53:14,406 [1216] [INFO] name               perc   sum  n   avg   max   min dev
+22:53:14,406 [1216] [INFO] ----------------- ----- ----- -- ----- ----- ----- ---
+22:53:14,407 [1216] [INFO] master (total) ..  100%  3.31  1  3.31  3.31  3.31   -
+```
+
+You can see three processes: one master (PID=1216) and two workers (PID=1217 and 1218).
+Each of them uses a separate instance of `pprofiler` and gets its own report.
+
+This is not the only solution. You can collect all reports in one process/thread
+and store all results or prepare you custom report:
+
+```python
+#!/usr/bin/python
+# coding: U8
+
+
+import time
+import random
+import multiprocessing
+import sys
+import logging
+import itertools
+
+from pprofiler import profiler
+
+
+logger = logging.getLogger()
+
+
+def rand_sleep(dt):
+    time.sleep(dt * (1 + 0.4 * (random.random() - 0.5)))  # dt ± 20%
+
+
+def subprocess_worker(x):
+    local_profiler = type(profiler)()  # create and use local profiler in each child process
+    logger.debug('Worker %d start', x)
+    with local_profiler('worker_%d' % x):
+        rand_sleep(3)
+    logger.debug('Worker %d done', x)
+    return local_profiler
+
+
+def main():
+    logging.basicConfig(
+        format='%(asctime)s,%(msecs)03d [%(process)d] [%(levelname)s] %(message)s',
+        datefmt='%H:%M:%S',
+        level=logging.DEBUG,
+        handlers=[logging.StreamHandler(sys.stdout)])
+    logger.debug('Master start')
+    with profiler('master (total)'):
+        pool = multiprocessing.Pool(processes=2)
+        workers_reports = list(pool.imap_unordered(subprocess_worker, range(2)))
+    logger.debug('Master done')
+    logger.info('== Native reports:')
+    profiler.print_report(logger.info)
+    for r in workers_reports:
+        r.print_report(logger.info)
+    logger.info('== Simple custom report:')
+    for r in itertools.chain.from_iterable(x.report for x in [profiler] + workers_reports):
+        logger.info('{name:.<20s} {sum:.3f} seconds'.format(**r))
+
+
+if __name__ == '__main__':
+    main()
+```
+
+Result:
+
+```
+10:24:48,085 [1353] [DEBUG] Master start
+10:24:48,136 [1355] [DEBUG] Worker 1 start
+10:24:48,136 [1354] [DEBUG] Worker 0 start
+10:24:51,391 [1355] [DEBUG] Worker 1 done
+10:24:51,705 [1354] [DEBUG] Worker 0 done
+10:24:51,707 [1353] [DEBUG] Master done
+10:24:51,708 [1353] [INFO] == Native reports:
+10:24:51,708 [1353] [INFO] name               perc   sum  n   avg   max   min dev
+10:24:51,709 [1353] [INFO] ----------------- ----- ----- -- ----- ----- ----- ---
+10:24:51,709 [1353] [INFO] master (total) ..  100%  3.62  1  3.62  3.62  3.62   -
+10:24:51,710 [1353] [INFO] name         perc   sum  n   avg   max   min dev
+10:24:51,710 [1353] [INFO] ----------- ----- ----- -- ----- ----- ----- ---
+10:24:51,710 [1353] [INFO] worker_1 ..  100%  3.25  1  3.25  3.25  3.25   -
+10:24:51,711 [1353] [INFO] name         perc   sum  n   avg   max   min dev
+10:24:51,711 [1353] [INFO] ----------- ----- ----- -- ----- ----- ----- ---
+10:24:51,711 [1353] [INFO] worker_0 ..  100%  3.57  1  3.57  3.57  3.57   -
+10:24:51,712 [1353] [INFO] == Simple custom report:
+10:24:51,712 [1353] [INFO] master (total)...... 3.621 seconds
+10:24:51,712 [1353] [INFO] worker_1............ 3.253 seconds
+10:24:51,713 [1353] [INFO] worker_0............ 3.567 seconds
+```
