@@ -10,7 +10,7 @@ import math
 
 
 __all__ = ['profiler']  # the only publick symbol
-__version__ = '1.1'
+__version__ = '2.0'
 
 
 SUBSCOPE_NAME = '~'
@@ -107,27 +107,28 @@ class TableField(object):
 class Profiler(object):
 
     def __init__(self):
-        self.scope = Scope(stat=None, scopes={})
-        self.stack = []
+        self.stack = [Scope(stat=None, scopes={})]
 
     def __call__(self, name):
         return Timer(self, name)
 
     def _enter(self, name):
-        if name not in self.scope.scopes:
-            self.scope.scopes[name] = Scope(stat=Stat(), scopes={})
-        self.stack.append(self.scope)
-        self.scope = self.scope.scopes[name]
+        self.stack.append(self.stack[-1].scopes.setdefault(name, Scope(stat=Stat(), scopes={})))
 
     def _update(self, val):
-        self.scope.stat.update(val)
-        self.scope = self.stack.pop()
+        self.stack.pop().stat.update(val)
 
     @property
     def report(self):
-        if self.scope.stat is not None:
+        return scopes_to_report(self.stack[0].scopes)
+
+    @property
+    def is_complete(self):
+        return len(self.stack) == 1
+
+    def check_complete(self):
+        if not self.is_complete:
             raise RuntimeError('pprofiler: report can not be prepared, not all measurements completed')
-        return scopes_to_report(self.scope.scopes)
 
     def __iter__(self):
         return report_to_flat(self.report)
@@ -188,7 +189,9 @@ def scopes_to_report(scopes):
         s = v.stat.stat
         s['name'] = k
         if v.scopes:
-            s[SUBSCOPE_NAME] = scopes_to_report(v.scopes)
+            sub_scopes = scopes_to_report(v.scopes)
+            if len(sub_scopes) > 0:
+                s[SUBSCOPE_NAME] = sub_scopes
         r.append(s)
         a += s['sum']
     if a > 0:
@@ -197,6 +200,7 @@ def scopes_to_report(scopes):
         p = lambda x: 0.
     for i in r:
         i['percent'] = p(i)
+    r = [x for x in r if x['num'] > 0 or len(x.get(SUBSCOPE_NAME, [])) > 0]
     r.sort(key=lambda x: x['sum'], reverse=True)
     return r
 

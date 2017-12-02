@@ -5,4 +5,4 @@ import pprofiler
 
 
 def test_version(monkeypatch):
-    assert pprofiler.__version__ == '1.1'
+    assert pprofiler.__version__ == '2.0'

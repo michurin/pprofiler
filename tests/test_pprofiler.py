@@ -78,9 +78,55 @@ def test_create_and_use_scope(fake_timer):
 
 def test_report_not_complete():
     local_profiler = type(profiler)()
-    with pytest.raises(RuntimeError):
-        with local_profiler('x'):
-            x = local_profiler.report
+    with local_profiler('x'):
+        incomplete = local_profiler.report
+        assert local_profiler.is_complete is False
+        with pytest.raises(RuntimeError):
+            local_profiler.check_complete()
+    assert local_profiler.is_complete is True
+    local_profiler.check_complete()
+    assert incomplete == []
+
+
+def test_report_deep_not_complete(fake_timer):
+    local_profiler = type(profiler)()
+    with local_profiler('a'):
+        with local_profiler('b'):
+            time.sleep(1)
+    with local_profiler('a'):
+        with local_profiler('b'):
+            with local_profiler('c'):
+                incomplete = local_profiler.report
+    assert incomplete == pytest.approx([{
+        'sum': 1., 'num': 1, 'avg': 1., 'dev': None, 'min': 1., 'max': 1., 'percent': 100.0, 'name': 'a', '~': [{
+        'sum': 1., 'num': 1, 'avg': 1., 'dev': None, 'min': 1., 'max': 1., 'percent': 100.0, 'name': 'b'}],
+    }])
+
+
+def test_report_deep_not_complete_inverted(fake_timer):
+    local_profiler = type(profiler)()
+    with local_profiler('a'):
+        with local_profiler('b'):
+            time.sleep(1)
+    with local_profiler('a'):
+        incomplete = local_profiler.report
+    assert incomplete == pytest.approx([{
+        'sum': 1., 'num': 1, 'avg': 1., 'dev': None, 'min': 1., 'max': 1., 'percent': 100.0, 'name': 'a', '~': [{
+        'sum': 1., 'num': 1, 'avg': 1., 'dev': None, 'min': 1., 'max': 1., 'percent': 100.0, 'name': 'b'}],
+    }])
+
+
+def test_report_deep_not_complete_topmost(fake_timer):
+    local_profiler = type(profiler)()
+    with local_profiler('a'):
+        with local_profiler('b'):
+            time.sleep(1)
+        with local_profiler('b'):
+            incomplete = local_profiler.report
+    assert incomplete == pytest.approx([{
+        'sum': 0.0, 'num': 0, 'avg': None, 'dev': None, 'min': None, 'max': None, 'name': 'a', 'percent': 0.0, '~': [{
+        'sum': 1.0, 'num': 1, 'avg': 1.0, 'dev': None, 'min': 1.0, 'max': 1.0, 'name': 'b', 'percent': 100.0}],
+    }])
 
 
 def test_no_data_in_scope():
