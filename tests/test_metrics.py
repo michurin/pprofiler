@@ -48,3 +48,8 @@ def test_metrics(data, expected):
     for v in data:
         s.update(v)
     assert s.stat == expected
+
+
+def test_repr():
+    s = Stat()
+    assert repr(s) == '<Stat(avg=None, dev=None, max=None, min=None, num=0, sum=0.0)>'

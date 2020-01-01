@@ -10,13 +10,16 @@ import math
 
 
 __all__ = ['profiler']  # the only publick symbol
-__version__ = '2.0'
+__version__ = '2.0.1'
 
 
 SUBSCOPE_NAME = '~'
 
 
 Scope = collections.namedtuple('Scope', ('stat', 'scopes'))
+
+
+std_print = print  # just to easy testing with Python2
 
 
 class Stat(object):
@@ -56,7 +59,7 @@ class Stat(object):
         }
 
     def __repr__(self):
-        return '<{}({})>'.format(type(self).__name__, ', '.join('{}={!r}'.format(*kv) for kv in self.stat.items()))
+        return '<{}({})>'.format(type(self).__name__, ', '.join('{}={!r}'.format(k, self.stat[k]) for k in sorted(self.stat.keys())))
 
 
 class Timer(object):
@@ -163,7 +166,7 @@ class Profiler(object):
 
     def print_report(self, printer=None):
         if printer is None:
-            printer = print
+            printer = std_print
         for s in self.lines:
             printer(s)
 

@@ -12,17 +12,16 @@ def test_contextmanager(fake_timer):
     for t in range(10):
         with local_profiler('x'):
             time.sleep(t)
-    assert local_profiler.report == [
-        pytest.approx({
-            'avg': 4.5,
-            'dev': 3.027650,
+    assert local_profiler.report == [{
+            'avg': pytest.approx(4.5),
+            'dev': pytest.approx(3.027650),
             'max': 9,
             'min': 0,
             'name': 'x',
             'num': 10,
-            'percent': 100.0,
-            'sum': 45.,
-        })]
+            'percent': pytest.approx(100.0),
+            'sum': pytest.approx(45.),
+        }]
 
 
 def test_decorator(fake_timer):
@@ -32,17 +31,16 @@ def test_decorator(fake_timer):
         time.sleep(t)
     for t in range(10):
         f(t)
-    assert local_profiler.report == [
-        pytest.approx({
-            'avg': 4.5,
-            'dev': 3.027650,
+    assert local_profiler.report == [{
+            'avg': pytest.approx(4.5),
+            'dev': pytest.approx(3.027650),
             'max': 9,
             'min': 0,
             'name': 'x',
             'num': 10,
-            'percent': 100.0,
-            'sum': 45.,
-        })]
+            'percent': pytest.approx(100.0),
+            'sum': pytest.approx(45.),
+        }]
 
 
 def test_create_and_use_order(fake_timer):
@@ -56,11 +54,11 @@ def test_create_and_use_order(fake_timer):
         time.sleep(3)
     with c:
         time.sleep(2)
-    assert local_profiler.report == pytest.approx([
-        {'avg': 5., 'dev': None, 'max': 5., 'min': 5., 'name': 'a', 'num': 1, 'percent': 50., 'sum': 5.},
-        {'avg': 3., 'dev': None, 'max': 3., 'min': 3., 'name': 'b', 'num': 1, 'percent': 30., 'sum': 3.},
-        {'avg': 2., 'dev': None, 'max': 2., 'min': 2., 'name': 'c', 'num': 1, 'percent': 20., 'sum': 2.},
-    ])
+    assert local_profiler.report == [
+        {'avg': pytest.approx(5.), 'dev': None, 'max': pytest.approx(5.), 'min': pytest.approx(5.), 'name': 'a', 'num': 1, 'percent': pytest.approx(50.), 'sum': pytest.approx(5.)},
+        {'avg': pytest.approx(3.), 'dev': None, 'max': pytest.approx(3.), 'min': pytest.approx(3.), 'name': 'b', 'num': 1, 'percent': pytest.approx(30.), 'sum': pytest.approx(3.)},
+        {'avg': pytest.approx(2.), 'dev': None, 'max': pytest.approx(2.), 'min': pytest.approx(2.), 'name': 'c', 'num': 1, 'percent': pytest.approx(20.), 'sum': pytest.approx(2.)},
+    ]
 
 
 def test_create_and_use_scope(fake_timer):
@@ -70,10 +68,10 @@ def test_create_and_use_scope(fake_timer):
     with a:
         with b:
             time.sleep(1)
-    assert local_profiler.report == pytest.approx([{
-        'avg': 1., 'dev': None, 'max': 1., 'min': 1., 'name': 'a', 'num': 1, 'percent': 100., 'sum': 1., '~': [{
-        'avg': 1., 'dev': None, 'max': 1., 'min': 1., 'name': 'b', 'num': 1, 'percent': 100., 'sum': 1.}],
-    }])
+    assert local_profiler.report == [{
+        'avg': pytest.approx(1.), 'dev': None, 'max': pytest.approx(1.), 'min': pytest.approx(1.), 'name': 'a', 'num': 1, 'percent': 100., 'sum': pytest.approx(1.), '~': [{
+        'avg': pytest.approx(1.), 'dev': None, 'max': pytest.approx(1.), 'min': pytest.approx(1.), 'name': 'b', 'num': 1, 'percent': 100., 'sum': pytest.approx(1.)}],
+    }]
 
 
 def test_report_not_complete():
@@ -97,10 +95,10 @@ def test_report_deep_not_complete(fake_timer):
         with local_profiler('b'):
             with local_profiler('c'):
                 incomplete = local_profiler.report
-    assert incomplete == pytest.approx([{
-        'sum': 1., 'num': 1, 'avg': 1., 'dev': None, 'min': 1., 'max': 1., 'percent': 100.0, 'name': 'a', '~': [{
-        'sum': 1., 'num': 1, 'avg': 1., 'dev': None, 'min': 1., 'max': 1., 'percent': 100.0, 'name': 'b'}],
-    }])
+    assert incomplete == [{
+        'sum': pytest.approx(1.), 'num': 1, 'avg': pytest.approx(1.), 'dev': None, 'min': pytest.approx(1.), 'max': pytest.approx(1.), 'percent': pytest.approx(100.0), 'name': 'a', '~': [{
+        'sum': pytest.approx(1.), 'num': 1, 'avg': pytest.approx(1.), 'dev': None, 'min': pytest.approx(1.), 'max': pytest.approx(1.), 'percent': pytest.approx(100.0), 'name': 'b'}],
+    }]
 
 
 def test_report_deep_not_complete_inverted(fake_timer):
@@ -110,10 +108,10 @@ def test_report_deep_not_complete_inverted(fake_timer):
             time.sleep(1)
     with local_profiler('a'):
         incomplete = local_profiler.report
-    assert incomplete == pytest.approx([{
-        'sum': 1., 'num': 1, 'avg': 1., 'dev': None, 'min': 1., 'max': 1., 'percent': 100.0, 'name': 'a', '~': [{
-        'sum': 1., 'num': 1, 'avg': 1., 'dev': None, 'min': 1., 'max': 1., 'percent': 100.0, 'name': 'b'}],
-    }])
+    assert incomplete == [{
+        'sum': pytest.approx(1.), 'num': 1, 'avg': pytest.approx(1.), 'dev': None, 'min': pytest.approx(1.), 'max': pytest.approx(1.), 'percent': pytest.approx(100.0), 'name': 'a', '~': [{
+        'sum': pytest.approx(1.), 'num': 1, 'avg': pytest.approx(1.), 'dev': None, 'min': pytest.approx(1.), 'max': pytest.approx(1.), 'percent': pytest.approx(100.0), 'name': 'b'}],
+    }]
 
 
 def test_report_deep_not_complete_topmost(fake_timer):
@@ -123,10 +121,10 @@ def test_report_deep_not_complete_topmost(fake_timer):
             time.sleep(1)
         with local_profiler('b'):
             incomplete = local_profiler.report
-    assert incomplete == pytest.approx([{
-        'sum': 0.0, 'num': 0, 'avg': None, 'dev': None, 'min': None, 'max': None, 'name': 'a', 'percent': 0.0, '~': [{
-        'sum': 1.0, 'num': 1, 'avg': 1.0, 'dev': None, 'min': 1.0, 'max': 1.0, 'name': 'b', 'percent': 100.0}],
-    }])
+    assert incomplete == [{
+        'sum': pytest.approx(0.0), 'num': 0, 'avg': None, 'dev': None, 'min': None, 'max': None, 'name': 'a', 'percent': pytest.approx(0.0), '~': [{
+        'sum': pytest.approx(1.0), 'num': 1, 'avg': pytest.approx(1.0), 'dev': None, 'min': pytest.approx(1.0), 'max': pytest.approx(1.0), 'name': 'b', 'percent': pytest.approx(100.0)}],
+    }]
 
 
 def test_no_data_in_scope():

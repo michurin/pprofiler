@@ -42,3 +42,10 @@ def fake_timer(monkeypatch):
 @pytest.fixture
 def fake_logger():
     return FakeLogger()
+
+
+@pytest.fixture
+def fake_out(monkeypatch):
+    fakestream = FakeLogger()
+    monkeypatch.setattr(pprofiler, 'std_print', fakestream)
+    return fakestream

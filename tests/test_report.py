@@ -6,6 +6,12 @@ import time
 from pprofiler import profiler
 
 
+def test_print_to_stdout(fake_timer, fake_out):
+    local_profiler = type(profiler)()
+    local_profiler.print_report()
+    assert fake_out.lines() == ['name perc sum n avg max min dev', '---- ---- --- - --- --- --- ---']
+
+
 def test_too_short_names(fake_timer, fake_logger):
     local_profiler = type(profiler)()
     with local_profiler('x'):
