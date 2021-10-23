@@ -1,0 +1,29 @@
+---
+name: test # this string appears on badge
+on:
+  - push
+  - pull_request
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install dependencies
+        run: |
+          python --version # just use system python
+          pip list
+          pip install -U pip
+          pip install -U pytest
+          pip install -U pytest-cov
+      - name: Install code
+        run: |
+          pip install .
+      - name: Run tests
+        run: |
+          pytest -vv --cov=pprofiler --cache-clear --cov-report=xml tests
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          files: coverage.xml
+          verbose: true
