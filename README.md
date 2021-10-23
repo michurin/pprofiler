@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/michurin/pprofiler.svg?branch=master)](https://travis-ci.com/michurin/pprofiler)
+[![test](https://github.com/michurin/pprofiler/actions/workflows/ci.yaml/badge.svg)](https://github.com/michurin/pprofiler/actions/workflows/ci.yaml)
 [![codecov](https://codecov.io/gh/michurin/pprofiler/branch/master/graph/badge.svg)](https://codecov.io/gh/michurin/pprofiler)
 [![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/)
 [![Python 2.7](https://img.shields.io/badge/python-2.7-blue.svg)](https://www.python.org/)
