@@ -3,12 +3,13 @@ name: test # this string appears on badge
 on:
   - push
   - pull_request
+  - workflow_dispatch
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Install dependencies
         run: |
           python --version # just use system python
@@ -23,7 +24,7 @@ jobs:
         run: |
           pytest -vv --cov=pprofiler --cache-clear --cov-report=xml tests
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           files: coverage.xml
           verbose: true
